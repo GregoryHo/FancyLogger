@@ -23,9 +23,9 @@ android {
 }
 
 // Home page url
-def siteUrl = 'https://github.com/GregoryHo/FastHook'
+def siteUrl = 'https://github.com/GregoryHo/FancyLogger'
 // git repository url
-def gitUrl = 'https://github.com/GregoryHo/FastHook.git'
+def gitUrl = 'https://github.com/GregoryHo/FancyLogger.git'
 // Maven Group ID for the artifact，
 group = "greg.library.fancy-logger"
 install {
