@@ -31,6 +31,10 @@ public class Printer {
   private static final String MIDDLE_BORDER = MIDDLE_CORNER + SINGLE_DIVIDER + SINGLE_DIVIDER;
   private static final String NEW_LINE = "\n";
 
+  // Title
+  private static final String THREAD_TITLE = " Thread: ";
+  private static final String MESSAGE_TITLE = " Message: ";
+
   private boolean showThreadInfo;
   private int methodOffset;
   private int methodCount;
@@ -83,7 +87,7 @@ public class Printer {
       builder.append(TOP_BORDER)
           .append(NEW_LINE)
           .append(HORIZONTAL_LINE)
-          .append(" Thread: ")
+          .append(THREAD_TITLE)
           .append(Thread.currentThread().getName())
           .append(NEW_LINE);
     }
@@ -105,7 +109,7 @@ public class Printer {
       }
 
       builder.append(HORIZONTAL_LINE);
-      for (int j = 0; j < space; j++) {
+      for (int s = 0; s < space; s++) {
         builder.append(' ');
       }
 
@@ -126,11 +130,27 @@ public class Printer {
     logDivider(builder, MIDDLE_BORDER);
 
     // Message
-    builder.append(HORIZONTAL_LINE)
-        .append(" Message: ")
-        .append(message)
-        .append(NEW_LINE)
-        .append(BOTTOM_BORDER);
+    String[] messages = message.split(NEW_LINE);
+    if (messages.length == 1) {
+      builder.append(HORIZONTAL_LINE)
+          .append(MESSAGE_TITLE)
+          .append(message)
+          .append(NEW_LINE)
+          .append(BOTTOM_BORDER);
+    } else {
+      builder.append(HORIZONTAL_LINE).append(MESSAGE_TITLE).append(NEW_LINE);
+      for (String msg : messages) {
+        builder.append(HORIZONTAL_LINE);
+        int subSpace = MESSAGE_TITLE.length() - 1;
+        for (int s = 0; s < subSpace; s++) {
+          builder.append(' ');
+        }
+
+        builder.append(msg).append(NEW_LINE);
+      }
+
+      builder.append(BOTTOM_BORDER);
+    }
 
     return builder.toString();
   }

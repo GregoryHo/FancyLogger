@@ -20,6 +20,26 @@ public class DemoActivity extends AppCompatActivity {
 
     FancyLogger.i("DEMO", "onCreate", FancyLogger.HIGH_PRIORITY);
 
+    String message = "============DEVICE INFO==============="
+        + "\n"
+        + "Title 1: A"
+        + "\n"
+        + "Title 2: B"
+        + "\n"
+        + "Title 3: C"
+        + "\n"
+        + "Title 4: D"
+        + "\n"
+        + "Title 5: E"
+        + "\n"
+        + "Title 6: F"
+        + "\n"
+        + "Title 7: G"
+        + "\n"
+        + "Title 8: H";
+
+    FancyLogger.d("DEMO", message);
+
     // Custom printer
     FancyLogger.init(FancyLogger.LOW_PRIORITY,
         new Printer.Builder().showThreadInfo(false).setMethodOffset(1).setMethodCount(5).build());
