@@ -40,6 +40,8 @@ public class DemoActivity extends AppCompatActivity {
 
     FancyLogger.d("DEMO", message);
 
+    FancyLogger.d("DEMO", "{\"person\":[{\"name\":Greg, \"sex\":man, \"age\":26}, {\"name\":Natalie, \"sex\":woman, \"age\":24}]}");
+
     // Custom printer
     FancyLogger.init(FancyLogger.LOW_PRIORITY,
         new Printer.Builder().showThreadInfo(false).setMethodOffset(1).setMethodCount(5).build());

@@ -2,6 +2,11 @@ package com.ns.greg.library.fancy_logger;
 
 import android.util.Log;
 import java.util.logging.Logger;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import static java.lang.Thread.currentThread;
 
 /**
  * Created by Gregory on 2017/7/21.
@@ -16,6 +21,8 @@ public class Printer {
 
   // The minimum stack trace index, starts at this class after two native calls.
   private static final int MIN_STACK_OFFSET = 2;
+
+  private static final int JSON_INDENT = 2;
 
   // Message box
   private static final char TOP_LEFT_CORNER = '┌';
@@ -79,20 +86,27 @@ public class Printer {
   }
 
   private String decorateMessage(String message) {
-    StackTraceElement[] trace = Thread.currentThread().getStackTrace();
     StringBuilder builder = new StringBuilder();
+    logHeader(builder);
+    logMethod(builder);
+    logMessage(message, builder);
 
-    // Thread
+    return builder.toString();
+  }
+
+  private void logHeader(StringBuilder builder) {
     if (showThreadInfo) {
       builder.append(TOP_BORDER)
           .append(NEW_LINE)
           .append(HORIZONTAL_LINE)
           .append(THREAD_TITLE)
-          .append(Thread.currentThread().getName())
+          .append(currentThread().getName())
           .append(NEW_LINE);
     }
+  }
 
-    // Method
+  private void logMethod(StringBuilder builder) {
+    StackTraceElement[] trace = Thread.currentThread().getStackTrace();
     int stackOffset = getStackOffset(trace) + methodOffset;
     //corresponding method count with the current stack may exceeds the stack trace. Trims the count
     if (methodCount + stackOffset > trace.length) {
@@ -128,8 +142,26 @@ public class Printer {
     }
 
     logDivider(builder, MIDDLE_BORDER);
+  }
 
-    // Message
+  private void logMessage(String message, StringBuilder builder) {
+    // Convert JSON
+    if (message.startsWith("{")) {
+      try {
+        JSONObject jsonObject = new JSONObject(message);
+        message = jsonObject.toString(JSON_INDENT);
+      } catch (JSONException e) {
+        e.printStackTrace();
+      }
+    } else if (message.startsWith("[")) {
+      try {
+        JSONArray jsonArray = new JSONArray(message);
+        message = jsonArray.toString(JSON_INDENT);
+      } catch (JSONException e) {
+        e.printStackTrace();
+      }
+    }
+
     String[] messages = message.split(NEW_LINE);
     if (messages.length == 1) {
       builder.append(HORIZONTAL_LINE)
@@ -151,8 +183,6 @@ public class Printer {
 
       builder.append(BOTTOM_BORDER);
     }
-
-    return builder.toString();
   }
 
   private void logDivider(StringBuilder builder, String border) {
