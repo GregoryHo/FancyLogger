@@ -102,6 +102,8 @@ public class Printer {
           .append(THREAD_TITLE)
           .append(currentThread().getName())
           .append(NEW_LINE);
+    } else {
+      builder.append(TOP_BORDER).append(NEW_LINE);
     }
   }
 
@@ -113,7 +115,9 @@ public class Printer {
       methodCount = trace.length - stackOffset - 1;
     }
 
-    logDivider(builder, TOP_BORDER);
+    if (methodCount > 0 && showThreadInfo) {
+      builder.append(MIDDLE_BORDER).append(NEW_LINE);
+    }
 
     int space = 1;
     for (int i = methodCount; i > 0; i--) {
@@ -141,7 +145,9 @@ public class Printer {
       space += 2;
     }
 
-    logDivider(builder, MIDDLE_BORDER);
+    if (methodCount > 0) {
+      builder.append(MIDDLE_BORDER).append(NEW_LINE);
+    }
   }
 
   private void logMessage(String message, StringBuilder builder) {
@@ -182,16 +188,6 @@ public class Printer {
       }
 
       builder.append(BOTTOM_BORDER);
-    }
-  }
-
-  private void logDivider(StringBuilder builder, String border) {
-    if (methodCount > 0) {
-      if (showThreadInfo) {
-        builder.append(MIDDLE_CORNER).append(SINGLE_DIVIDER).append(NEW_LINE);
-      } else {
-        builder.append(border).append(NEW_LINE);
-      }
     }
   }
 

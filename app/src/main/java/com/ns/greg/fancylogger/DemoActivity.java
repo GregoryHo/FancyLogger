@@ -44,7 +44,7 @@ public class DemoActivity extends AppCompatActivity {
 
     // Custom printer
     FancyLogger.init(FancyLogger.LOW_PRIORITY,
-        new Printer.Builder().showThreadInfo(false).setMethodOffset(1).setMethodCount(5).build());
+        new Printer.Builder().showThreadInfo(false).build());
 
     FancyLogger.e("DEMO", "onCreate", FancyLogger.NORMAL_PRIORITY);
   }
