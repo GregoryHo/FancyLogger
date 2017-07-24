@@ -1,7 +1,6 @@
 package com.ns.greg.library.fancy_logger;
 
 import android.util.Log;
-import java.util.logging.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -201,7 +200,7 @@ public class Printer {
     for (int i = MIN_STACK_OFFSET; i < trace.length; i++) {
       StackTraceElement e = trace[i];
       String name = e.getClassName();
-      if (!name.equals(Printer.class.getName()) && !name.equals(Logger.class.getName())) {
+      if (!name.equals(Printer.class.getName()) && !name.equals(FancyLogger.class.getName())) {
         return --i;
       }
     }
@@ -217,7 +216,7 @@ public class Printer {
   public static final class Builder {
 
     private boolean showThreadInfo = true;
-    private int methodOffset = 1;
+    private int methodOffset = 0;
     private int methodCount = 2;
 
     public Builder showThreadInfo(boolean showThreadInfo) {
