@@ -131,14 +131,14 @@ public class Printer {
       }
 
       builder.append(getSimpleClassName(trace[stackIndex].getClassName()))
-          .append(".")
+          .append('.')
           .append(trace[stackIndex].getMethodName())
-          .append(" ")
-          .append(" (")
+          .append(' ')
+          .append('(')
           .append(trace[stackIndex].getFileName())
-          .append(":")
+          .append(':')
           .append(trace[stackIndex].getLineNumber())
-          .append(")")
+          .append(')')
           .append(NEW_LINE);
 
       space += 2;
