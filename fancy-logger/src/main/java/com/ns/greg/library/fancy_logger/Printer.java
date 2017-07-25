@@ -28,6 +28,7 @@ public class Printer {
   private static final char BOTTOM_LEFT_CORNER = '└';
   private static final char MIDDLE_CORNER = '├';
   private static final char HORIZONTAL_LINE = '│';
+  private static final char SPCAE = ' ';
   private static final String DOUBLE_DIVIDER =
       "────────────────────────────────────────────────────────";
   private static final String SINGLE_DIVIDER =
@@ -38,8 +39,8 @@ public class Printer {
   private static final String NEW_LINE = "\n";
 
   // Title
-  private static final String THREAD_TITLE = " Thread: ";
-  private static final String MESSAGE_TITLE = " Message: ";
+  private static final String THREAD_TITLE = "Thread: ";
+  private static final String MESSAGE_TITLE = "Message: ";
 
   private boolean showThreadInfo;
   private int methodOffset;
@@ -98,6 +99,7 @@ public class Printer {
       builder.append(TOP_BORDER)
           .append(NEW_LINE)
           .append(HORIZONTAL_LINE)
+          .append(SPCAE)
           .append(THREAD_TITLE)
           .append(currentThread().getName())
           .append(NEW_LINE);
@@ -127,13 +129,13 @@ public class Printer {
 
       builder.append(HORIZONTAL_LINE);
       for (int s = 0; s < space; s++) {
-        builder.append(' ');
+        builder.append(SPCAE);
       }
 
       builder.append(getSimpleClassName(trace[stackIndex].getClassName()))
           .append('.')
           .append(trace[stackIndex].getMethodName())
-          .append(' ')
+          .append(SPCAE)
           .append('(')
           .append(trace[stackIndex].getFileName())
           .append(':')
@@ -170,17 +172,18 @@ public class Printer {
     String[] messages = message.split(NEW_LINE);
     if (messages.length == 1) {
       builder.append(HORIZONTAL_LINE)
+          .append(SPCAE)
           .append(MESSAGE_TITLE)
           .append(message)
           .append(NEW_LINE)
           .append(BOTTOM_BORDER);
     } else {
-      builder.append(HORIZONTAL_LINE).append(MESSAGE_TITLE).append(NEW_LINE);
+      builder.append(HORIZONTAL_LINE).append(SPCAE).append(MESSAGE_TITLE).append(NEW_LINE);
       for (String msg : messages) {
         builder.append(HORIZONTAL_LINE);
-        int subSpace = MESSAGE_TITLE.length() - 1;
+        int subSpace = MESSAGE_TITLE.length();
         for (int s = 0; s < subSpace; s++) {
-          builder.append(' ');
+          builder.append(SPCAE);
         }
 
         builder.append(msg).append(NEW_LINE);

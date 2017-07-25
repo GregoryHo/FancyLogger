@@ -40,11 +40,11 @@ public class DemoActivity extends AppCompatActivity {
 
     FancyLogger.d("DEMO", message);
 
-    FancyLogger.d("DEMO", "{\"person\":[{\"name\":Greg, \"sex\":man, \"age\":26}, {\"name\":Natalie, \"sex\":woman, \"age\":24}]}");
+    FancyLogger.d("DEMO",
+        "{\"person\":[{\"name\":Greg, \"sex\":man, \"age\":26}, {\"name\":Natalie, \"sex\":woman, \"age\":24}]}");
 
     // Custom printer
-    FancyLogger.init(FancyLogger.LOW_PRIORITY,
-        new Printer.Builder().showThreadInfo(false).build());
+    FancyLogger.init(FancyLogger.LOW_PRIORITY, new Printer.Builder().showThreadInfo(false).build());
 
     FancyLogger.e("DEMO", "onCreate", FancyLogger.NORMAL_PRIORITY);
   }
