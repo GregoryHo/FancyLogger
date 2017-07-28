@@ -86,7 +86,7 @@ public class Printer {
   }
 
   private String decorateMessage(String message) {
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = new StringBuilder(256);
     logHeader(builder);
     logMethod(builder);
     logMessage(message, builder);
