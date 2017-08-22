@@ -3,11 +3,10 @@ apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
 // Library version
-version = "1.0.8"
+version = "1.0.9"
 android {
   compileSdkVersion 25
   buildToolsVersion '25.0.3'
-
   defaultConfig {
     minSdkVersion 16
     targetSdkVersion 25
@@ -27,7 +26,7 @@ def siteUrl = 'https://github.com/GregoryHo/FancyLogger'
 // git repository url
 def gitUrl = 'https://github.com/GregoryHo/FancyLogger.git'
 // Maven Group ID for the artifact，
-group = "greg.library.fancy-logger"
+group = "greg.ns.library"
 install {
   repositories.mavenInstaller {
     // This generates POM.xml with proper parameters
