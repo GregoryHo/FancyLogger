@@ -134,7 +134,7 @@ public class Printer {
             fileOutputStream = new FileOutputStream(file, true);
           }
 
-          fileOutputStream.write((logTimeStamp + "\n" + decorate).getBytes());
+          fileOutputStream.write((logTimeStamp + "\n" + decorate).getBytes("UTF-8"));
           fileOutputStream.close();
         }
       } catch (Exception e) {
