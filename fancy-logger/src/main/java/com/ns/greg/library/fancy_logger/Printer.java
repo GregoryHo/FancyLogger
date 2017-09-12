@@ -1,10 +1,18 @@
 package com.ns.greg.library.fancy_logger;
 
+import android.os.Environment;
 import android.util.Log;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import static android.content.ContentValues.TAG;
 import static java.lang.Thread.currentThread;
 
 /**
@@ -12,6 +20,8 @@ import static java.lang.Thread.currentThread;
  */
 
 public class Printer {
+
+  private static final String LOG_PREFIX = "/FancyLogs";
 
   /**
    * @see <a href="http://stackoverflow.com/a/8899735" />
@@ -28,7 +38,7 @@ public class Printer {
   private static final char BOTTOM_LEFT_CORNER = '└';
   private static final char MIDDLE_CORNER = '├';
   private static final char HORIZONTAL_LINE = '│';
-  private static final char SPCAE = ' ';
+  private static final char SPACE = ' ';
   private static final String DOUBLE_DIVIDER =
       "────────────────────────────────────────────────────────";
   private static final String SINGLE_DIVIDER =
@@ -37,24 +47,29 @@ public class Printer {
   private static final String BOTTOM_BORDER = BOTTOM_LEFT_CORNER + DOUBLE_DIVIDER + DOUBLE_DIVIDER;
   private static final String MIDDLE_BORDER = MIDDLE_CORNER + SINGLE_DIVIDER + SINGLE_DIVIDER;
   private static final String NEW_LINE = "\n";
-
   // Title
   private static final String THREAD_TITLE = "Thread: ";
   private static final String MESSAGE_TITLE = "Message: ";
 
+  private static final int MAX_LINE_LENGTH = MIDDLE_BORDER.length() - 11;
+
   private boolean showThreadInfo;
   private int methodOffset;
   private int methodCount;
+  private boolean log2File;
+  private String prefix;
 
-  private Printer(boolean showThreadInfo, int methodOffset, int methodCount) {
+  private Printer(boolean showThreadInfo, int methodOffset, int methodCount, boolean log2File,
+      String prefix) {
     this.showThreadInfo = showThreadInfo;
     this.methodOffset = methodOffset;
     this.methodCount = methodCount;
+    this.log2File = log2File;
+    this.prefix = prefix;
   }
 
   void log(int verbose, String tag, String message) {
     String decorate = decorateMessage(message);
-
     switch (verbose) {
       case FancyLogger.VERBOSE:
         Log.v(tag, decorate);
@@ -83,6 +98,42 @@ public class Printer {
       default:
         break;
     }
+
+    log2Files(decorate);
+  }
+
+  private void log2Files(String decorate) {
+    if (log2File) {
+      try {
+        File direct = new File(
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                + LOG_PREFIX);
+
+        if (!direct.exists()) {
+          direct.mkdir();
+        }
+
+        String fileNameTimeStamp =
+            new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
+        String logTimeStamp =
+            new SimpleDateFormat("E MMM dd yyyy 'at' HH:mm:ss:sss", Locale.getDefault()).format(
+                new Date());
+        String fileName = prefix + fileNameTimeStamp + ".txt";
+        File file = new File(
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                + LOG_PREFIX
+                + File.separator
+                + fileName);
+        file.createNewFile();
+        if (file.exists()) {
+          OutputStream fileOutputStream = new FileOutputStream(file, true);
+          fileOutputStream.write((logTimeStamp + "\n" + decorate).getBytes());
+          fileOutputStream.close();
+        }
+      } catch (Exception e) {
+        Log.e(TAG, "Error while logging into file : " + e);
+      }
+    }
   }
 
   private String decorateMessage(String message) {
@@ -99,7 +150,7 @@ public class Printer {
       builder.append(TOP_BORDER)
           .append(NEW_LINE)
           .append(HORIZONTAL_LINE)
-          .append(SPCAE)
+          .append(SPACE)
           .append(THREAD_TITLE)
           .append(currentThread().getName())
           .append(NEW_LINE);
@@ -129,13 +180,13 @@ public class Printer {
 
       builder.append(HORIZONTAL_LINE);
       for (int s = 0; s < space; s++) {
-        builder.append(SPCAE);
+        builder.append(SPACE);
       }
 
       builder.append(getSimpleClassName(trace[stackIndex].getClassName()))
           .append('.')
           .append(trace[stackIndex].getMethodName())
-          .append(SPCAE)
+          .append(SPACE)
           .append('(')
           .append(trace[stackIndex].getFileName())
           .append(':')
@@ -170,26 +221,56 @@ public class Printer {
     }
 
     String[] messages = message.split(NEW_LINE);
-    if (messages.length == 1) {
-      builder.append(HORIZONTAL_LINE)
-          .append(SPCAE)
-          .append(MESSAGE_TITLE)
-          .append(message)
-          .append(NEW_LINE)
-          .append(BOTTOM_BORDER);
-    } else {
-      builder.append(HORIZONTAL_LINE).append(SPCAE).append(MESSAGE_TITLE).append(NEW_LINE);
+    int length = messages.length;
+    if (length == 1) {
+      builder.append(HORIZONTAL_LINE).append(SPACE).append(MESSAGE_TITLE);
+      substringMessage(message, false, builder);
+      builder.append(BOTTOM_BORDER).append(NEW_LINE);
+    } else if (messages.length > 1) {
+      builder.append(HORIZONTAL_LINE).append(SPACE).append(MESSAGE_TITLE).append(NEW_LINE);
       for (String msg : messages) {
-        builder.append(HORIZONTAL_LINE);
-        int subSpace = MESSAGE_TITLE.length();
-        for (int s = 0; s < subSpace; s++) {
-          builder.append(SPCAE);
-        }
-
-        builder.append(msg).append(NEW_LINE);
+        substringMessage(msg, true, builder);
       }
 
-      builder.append(BOTTOM_BORDER);
+      builder.append(BOTTOM_BORDER).append(NEW_LINE);
+    }
+  }
+
+  private void substringMessage(String message, boolean hasNewLine, StringBuilder builder) {
+    int messageLength = message.length();
+    if (messageLength > MAX_LINE_LENGTH) {
+      int startIndex = 0;
+      int endIndex = MAX_LINE_LENGTH;
+      while (endIndex <= messageLength) {
+        if (startIndex != 0) {
+          builder.append(HORIZONTAL_LINE);
+          int subSpace = MESSAGE_TITLE.length();
+          for (int s = 0; s <= subSpace; s++) {
+            builder.append(SPACE);
+          }
+        }
+
+        builder.append(message.substring(startIndex, endIndex)).append(NEW_LINE);
+        if (endIndex == messageLength) {
+          break;
+        }
+
+        startIndex = endIndex;
+        endIndex =
+            endIndex + MAX_LINE_LENGTH < messageLength ? endIndex + MAX_LINE_LENGTH : messageLength;
+      }
+    } else {
+      if (!hasNewLine) {
+        builder.append(message).append(NEW_LINE);
+      } else {
+        builder.append(HORIZONTAL_LINE);
+        int subSpace = MESSAGE_TITLE.length();
+        for (int s = 0; s <= subSpace; s++) {
+          builder.append(SPACE);
+        }
+
+        builder.append(message).append(NEW_LINE);
+      }
     }
   }
 
@@ -221,6 +302,8 @@ public class Printer {
     private boolean showThreadInfo = true;
     private int methodOffset = 0;
     private int methodCount = 2;
+    private String prefix = "";
+    private boolean log2File = false;
 
     public Builder showThreadInfo(boolean showThreadInfo) {
       this.showThreadInfo = showThreadInfo;
@@ -237,8 +320,14 @@ public class Printer {
       return this;
     }
 
+    public Builder log2File(boolean log, String prefix) {
+      this.prefix = prefix;
+      this.log2File = log;
+      return this;
+    }
+
     public Printer build() {
-      return new Printer(showThreadInfo, methodOffset, methodCount);
+      return new Printer(showThreadInfo, methodOffset, methodCount, log2File, prefix);
     }
   }
 }
