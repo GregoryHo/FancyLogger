@@ -45,10 +45,10 @@ public class DemoActivity extends AppCompatActivity {
 
     // Custom printer
     FancyLogger.init(FancyLogger.LOW_PRIORITY,
-        new Printer.Builder().showThreadInfo(false).log2File(true).build());
+        new Printer.Builder().showThreadInfo(false).log2File(true, "Demo_").build());
 
     FancyLogger.e("DEMO",
-        "m7FA35CW909782MainClient_1505216071558 connect to MQTT server failed, MqttException (0) - java.net.UnknownHostException: Unable to resolve host \"mqtt.edimax.com\": No address associated with hostname",
+        "{\"person\":[{\"name\":Greg, \"sex\":man, \"age\":26}, {\"name\":Natalie, \"sex\":woman, \"age\":24}]}",
         FancyLogger.NORMAL_PRIORITY);
   }
 }

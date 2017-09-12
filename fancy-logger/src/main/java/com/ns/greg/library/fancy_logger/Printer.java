@@ -52,6 +52,7 @@ public class Printer {
   private static final String MESSAGE_TITLE = "Message: ";
 
   private static final int MAX_LINE_LENGTH = MIDDLE_BORDER.length() - 11;
+  private static final long MAX_LOG_FILE_SIZE = 15 * 1024 * 1024;
 
   private boolean showThreadInfo;
   private int methodOffset;
@@ -126,7 +127,13 @@ public class Printer {
                 + fileName);
         file.createNewFile();
         if (file.exists()) {
-          OutputStream fileOutputStream = new FileOutputStream(file, true);
+          OutputStream fileOutputStream;
+          if (file.length() > MAX_LOG_FILE_SIZE) {
+            fileOutputStream = new FileOutputStream(file, false);
+          } else {
+            fileOutputStream = new FileOutputStream(file, true);
+          }
+
           fileOutputStream.write((logTimeStamp + "\n" + decorate).getBytes());
           fileOutputStream.close();
         }
