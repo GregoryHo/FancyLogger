@@ -1,10 +1,13 @@
 package com.ns.greg.library.fancy_logger;
 
+import android.content.Context;
+import android.media.MediaScannerConnection;
 import android.os.Environment;
 import android.util.Log;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -41,8 +44,7 @@ public class Printer {
   private static final char SPACE = ' ';
   private static final String DOUBLE_DIVIDER =
       "────────────────────────────────────────────────────────";
-  private static final String SINGLE_DIVIDER =
-      "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄";
+  private static final String SINGLE_DIVIDER = "────────────────────────────────────────────────";
   private static final String TOP_BORDER = TOP_LEFT_CORNER + DOUBLE_DIVIDER + DOUBLE_DIVIDER;
   private static final String BOTTOM_BORDER = BOTTOM_LEFT_CORNER + DOUBLE_DIVIDER + DOUBLE_DIVIDER;
   private static final String MIDDLE_BORDER = MIDDLE_CORNER + SINGLE_DIVIDER + SINGLE_DIVIDER;
@@ -54,18 +56,19 @@ public class Printer {
   private static final int MAX_LINE_LENGTH = MIDDLE_BORDER.length() - 11;
   private static final long MAX_LOG_FILE_SIZE = 15 * 1024 * 1024;
 
-  private boolean showThreadInfo;
-  private int methodOffset;
-  private int methodCount;
-  private boolean log2File;
-  private String prefix;
+  private final boolean showThreadInfo;
+  private final int methodOffset;
+  private final int methodCount;
+  private final Context context;
+  private final String prefix;
 
-  private Printer(boolean showThreadInfo, int methodOffset, int methodCount, boolean log2File,
+  private Printer(boolean showThreadInfo, int methodOffset, int methodCount, Context context,
       String prefix) {
     this.showThreadInfo = showThreadInfo;
     this.methodOffset = methodOffset;
     this.methodCount = methodCount;
-    this.log2File = log2File;
+    WeakReference<Context> weakReference = new WeakReference<>(context);
+    this.context = weakReference.get();
     this.prefix = prefix;
   }
 
@@ -104,7 +107,7 @@ public class Printer {
   }
 
   private void log2Files(String decorate) {
-    if (log2File) {
+    if (context != null) {
       try {
         File direct = new File(
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
@@ -136,6 +139,8 @@ public class Printer {
 
           fileOutputStream.write((logTimeStamp + "\n" + decorate).getBytes("UTF-8"));
           fileOutputStream.close();
+          // Scan file
+          MediaScannerConnection.scanFile(context, new String[] { file.toString() }, null, null);
         }
       } catch (Exception e) {
         Log.e(TAG, "Error while logging into file : " + e);
@@ -169,7 +174,8 @@ public class Printer {
   private void logMethod(StringBuilder builder) {
     StackTraceElement[] trace = Thread.currentThread().getStackTrace();
     int stackOffset = getStackOffset(trace) + methodOffset;
-    //corresponding method count with the current stack may exceeds the stack trace. Trims the count
+    // corresponding method count with the current stack may exceeds the stack trace. Trims the count
+    int methodCount = this.methodCount;
     if (methodCount + stackOffset > trace.length) {
       methodCount = trace.length - stackOffset - 1;
     }
@@ -309,8 +315,8 @@ public class Printer {
     private boolean showThreadInfo = true;
     private int methodOffset = 0;
     private int methodCount = 2;
+    private Context context;
     private String prefix = "";
-    private boolean log2File = false;
 
     public Builder showThreadInfo(boolean showThreadInfo) {
       this.showThreadInfo = showThreadInfo;
@@ -327,14 +333,14 @@ public class Printer {
       return this;
     }
 
-    public Builder log2File(boolean log, String prefix) {
+    public Builder log2File(Context context, String prefix) {
+      this.context = context;
       this.prefix = prefix;
-      this.log2File = log;
       return this;
     }
 
     public Printer build() {
-      return new Printer(showThreadInfo, methodOffset, methodCount, log2File, prefix);
+      return new Printer(showThreadInfo, methodOffset, methodCount, context, prefix);
     }
   }
 }

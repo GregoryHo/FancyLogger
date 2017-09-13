@@ -1,5 +1,8 @@
 package com.ns.greg.library.fancy_logger;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * Created by Gregory on 2017/7/21.
  */
@@ -20,21 +23,14 @@ public class FancyLogger {
   static final int ERROR = 6;
   static final int WTF = 7;
 
-  private static int currentPriority = LOW_PRIORITY;
-
-  private static Printer fancyPrinter;
+  private static Map<Integer, Printer> printers = new ConcurrentHashMap<>();
 
   private FancyLogger() {
     throw new AssertionError("No instance.");
   }
 
-  public static void init(int priority) {
-    init(priority, new Printer.Builder().build());
-  }
-
-  public static void init(int priority, Printer printer) {
-    currentPriority = priority;
-    fancyPrinter = printer;
+  public static void add(int priority, Printer printer) {
+    printers.put(priority, printer);
   }
 
   public static void v(String tag, String message) {
@@ -42,9 +38,7 @@ public class FancyLogger {
   }
 
   public static void v(String tag, String message, int priority) {
-    if (priority <= currentPriority) {
-      log(tag, message, VERBOSE);
-    }
+    log(priority, VERBOSE, tag, message);
   }
 
   public static void d(String tag, String message) {
@@ -52,9 +46,7 @@ public class FancyLogger {
   }
 
   public static void d(String tag, String message, int priority) {
-    if (priority <= currentPriority) {
-      log(tag, message, DEBUG);
-    }
+    log(priority, DEBUG, tag, message);
   }
 
   public static void i(String tag, String message) {
@@ -62,9 +54,7 @@ public class FancyLogger {
   }
 
   public static void i(String tag, String message, int priority) {
-    if (priority <= currentPriority) {
-      log(tag, message, INFO);
-    }
+    log(priority, INFO, tag, message);
   }
 
   public static void w(String tag, String message) {
@@ -72,9 +62,7 @@ public class FancyLogger {
   }
 
   public static void w(String tag, String message, int priority) {
-    if (priority <= currentPriority) {
-      log(tag, message, WARN);
-    }
+    log(priority, WARN, tag, message);
   }
 
   public static void e(String tag, String message) {
@@ -82,9 +70,7 @@ public class FancyLogger {
   }
 
   public static void e(String tag, String message, int priority) {
-    if (priority <= currentPriority) {
-      log(tag, message, ERROR);
-    }
+    log(priority, ERROR, tag, message);
   }
 
   public static void wtf(String tag, String message) {
@@ -92,16 +78,14 @@ public class FancyLogger {
   }
 
   public static void wtf(String tag, String message, int priority) {
-    if (priority <= currentPriority) {
-      log(tag, message, WTF);
-    }
+    log(priority, WTF, tag, message);
   }
 
-  private static void log(String tag, String message, int verbose) {
-    if (fancyPrinter == null) {
-      throw new AssertionError("You should call init() before use it.");
+  private static void log(int priority, int verbose, String tag, String message) {
+    for (int key : printers.keySet()) {
+      if (priority <= key) {
+        printers.get(key).log(verbose, tag, message);
+      }
     }
-
-    fancyPrinter.log(verbose, tag, message);
   }
 }

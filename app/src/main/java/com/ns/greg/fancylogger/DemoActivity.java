@@ -16,7 +16,12 @@ public class DemoActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
 
     // Using default way
-    FancyLogger.init(FancyLogger.LOW_PRIORITY);
+    FancyLogger.add(FancyLogger.HIGH_PRIORITY, new Printer.Builder().build());
+    // Custom printer
+    FancyLogger.add(FancyLogger.LOW_PRIORITY, new Printer.Builder().setMethodOffset(2)
+        .showThreadInfo(false)
+        .log2File(getApplicationContext(), "Demo_")
+        .build());
 
     FancyLogger.i("DEMO", "onCreate", FancyLogger.HIGH_PRIORITY);
 
@@ -38,17 +43,11 @@ public class DemoActivity extends AppCompatActivity {
         + "\n"
         + "Title 8: H";
 
-    FancyLogger.d("DEMO", message);
+    FancyLogger.d("DEMO", message, FancyLogger.NORMAL_PRIORITY);
 
     FancyLogger.d("DEMO",
         "{\"person\":[{\"name\":Greg, \"sex\":man, \"age\":26}, {\"name\":Natalie, \"sex\":woman, \"age\":24}]}");
 
-    // Custom printer
-    FancyLogger.init(FancyLogger.LOW_PRIORITY,
-        new Printer.Builder().showThreadInfo(false).log2File(true, "Demo_").build());
-
-    FancyLogger.e("DEMO",
-        "{\"person\":[{\"name\":Greg, \"sex\":man, \"age\":26}, {\"name\":Natalie, \"sex\":woman, \"age\":24}]}",
-        FancyLogger.NORMAL_PRIORITY);
+    FancyLogger.e("DEMO", "Fancy Logger log to the file!", FancyLogger.LOW_PRIORITY);
   }
 }
