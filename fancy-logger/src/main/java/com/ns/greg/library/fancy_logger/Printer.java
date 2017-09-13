@@ -74,77 +74,77 @@ public class Printer {
 
   void log(int verbose, String tag, String message) {
     String decorate = decorateMessage(message);
-    switch (verbose) {
-      case FancyLogger.VERBOSE:
-        Log.v(tag, decorate);
-        break;
+    if (context != null) {
+      log2Files(decorate);
+    } else {
+      switch (verbose) {
+        case FancyLogger.VERBOSE:
+          Log.v(tag, decorate);
+          break;
 
-      case FancyLogger.DEBUG:
-        Log.d(tag, decorate);
-        break;
+        case FancyLogger.DEBUG:
+          Log.d(tag, decorate);
+          break;
 
-      case FancyLogger.INFO:
-        Log.i(tag, decorate);
-        break;
+        case FancyLogger.INFO:
+          Log.i(tag, decorate);
+          break;
 
-      case FancyLogger.WARN:
-        Log.w(tag, decorate);
-        break;
+        case FancyLogger.WARN:
+          Log.w(tag, decorate);
+          break;
 
-      case FancyLogger.ERROR:
-        Log.e(tag, decorate);
-        break;
+        case FancyLogger.ERROR:
+          Log.e(tag, decorate);
+          break;
 
-      case FancyLogger.WTF:
-        Log.w(tag, decorate);
-        break;
+        case FancyLogger.WTF:
+          Log.w(tag, decorate);
+          break;
 
-      default:
-        break;
+        default:
+          break;
+      }
     }
-
-    log2Files(decorate);
   }
 
   private void log2Files(String decorate) {
-    if (context != null) {
-      try {
-        File direct = new File(
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                + LOG_PREFIX);
+    try {
+      File direct = new File(
+          Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+              + LOG_PREFIX);
 
-        if (!direct.exists()) {
-          direct.mkdir();
-        }
-
-        String fileNameTimeStamp =
-            new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
-        String logTimeStamp =
-            new SimpleDateFormat("E MMM dd yyyy 'at' HH:mm:ss:sss", Locale.getDefault()).format(
-                new Date());
-        String fileName = prefix + fileNameTimeStamp + ".txt";
-        File file = new File(
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                + LOG_PREFIX
-                + File.separator
-                + fileName);
-        file.createNewFile();
-        if (file.exists()) {
-          OutputStream fileOutputStream;
-          if (file.length() > MAX_LOG_FILE_SIZE) {
-            fileOutputStream = new FileOutputStream(file, false);
-          } else {
-            fileOutputStream = new FileOutputStream(file, true);
-          }
-
-          fileOutputStream.write((logTimeStamp + "\n" + decorate).getBytes("UTF-8"));
-          fileOutputStream.close();
-          // Scan file
-          MediaScannerConnection.scanFile(context, new String[] { file.toString() }, null, null);
-        }
-      } catch (Exception e) {
-        Log.e(TAG, "Error while logging into file : " + e);
+      if (!direct.exists()) {
+        direct.mkdir();
       }
+
+      String fileNameTimeStamp =
+          new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
+      String logTimeStamp =
+          new SimpleDateFormat("E MMM dd yyyy 'at' HH:mm:ss:sss", Locale.getDefault()).format(
+              new Date());
+      String fileName = prefix + fileNameTimeStamp + ".txt";
+      File file = new File(
+          Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+              + LOG_PREFIX
+              + File.separator
+              + fileName);
+      file.createNewFile();
+      if (file.exists()) {
+        OutputStream fileOutputStream;
+        if (file.length() > MAX_LOG_FILE_SIZE) {
+          fileOutputStream = new FileOutputStream(file, false);
+        } else {
+          fileOutputStream = new FileOutputStream(file, true);
+        }
+
+        fileOutputStream.write((logTimeStamp + "\n" + decorate).getBytes("UTF-8"));
+        fileOutputStream.close();
+        // Scan file
+        MediaScannerConnection.scanFile(context, new String[] { file.toString() }, null, null);
+      }
+    } catch (Exception e) {
+      Log.e(TAG, "Error while logging into file : " + e);
     }
   }
 
