@@ -73,6 +73,10 @@ public class Printer {
   }
 
   void log(int verbose, String tag, String message) {
+    if (message == null) {
+      message = "NULL";
+    }
+
     String decorate = decorateMessage(message);
     if (context != null) {
       log2Files(decorate);
