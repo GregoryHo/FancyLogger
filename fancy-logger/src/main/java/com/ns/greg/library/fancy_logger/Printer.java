@@ -54,7 +54,7 @@ public class Printer {
   private static final String MESSAGE_TITLE = "Message: ";
 
   private static final int MAX_LINE_LENGTH = MIDDLE_BORDER.length() - 11;
-  private static final long MAX_LOG_FILE_SIZE = 15 * 1024 * 1024;
+  private static final long DEFAULT_LOG_FILE_SIZE = 100 * 1024 * 1024;
 
   private final boolean showThreadInfo;
   private final int methodOffset;
@@ -138,12 +138,7 @@ public class Printer {
       file.createNewFile();
       if (file.exists()) {
         OutputStream fileOutputStream;
-        if (file.length() > logFileSize) {
-          fileOutputStream = new FileOutputStream(file, false);
-        } else {
-          fileOutputStream = new FileOutputStream(file, true);
-        }
-
+        fileOutputStream = new FileOutputStream(file, file.length() < logFileSize);
         fileOutputStream.write((logTimeStamp + "\n" + decorate).getBytes("UTF-8"));
         fileOutputStream.close();
         // Scan file
@@ -323,7 +318,7 @@ public class Printer {
     private int methodCount = 2;
     private Context context;
     private String prefix = "";
-    private long logFileSize = MAX_LOG_FILE_SIZE;
+    private long logFileSize = DEFAULT_LOG_FILE_SIZE;
 
     public Builder showThreadInfo(boolean showThreadInfo) {
       this.showThreadInfo = showThreadInfo;
