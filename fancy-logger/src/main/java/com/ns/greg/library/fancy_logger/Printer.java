@@ -61,15 +61,17 @@ public class Printer {
   private final int methodCount;
   private final Context context;
   private final String prefix;
+  private final long logFileSize;
 
   private Printer(boolean showThreadInfo, int methodOffset, int methodCount, Context context,
-      String prefix) {
+      String prefix, long logFileSize) {
     this.showThreadInfo = showThreadInfo;
     this.methodOffset = methodOffset;
     this.methodCount = methodCount;
     WeakReference<Context> weakReference = new WeakReference<>(context);
     this.context = weakReference.get();
     this.prefix = prefix;
+    this.logFileSize = logFileSize;
   }
 
   void log(int verbose, String tag, String message) {
@@ -136,7 +138,7 @@ public class Printer {
       file.createNewFile();
       if (file.exists()) {
         OutputStream fileOutputStream;
-        if (file.length() > MAX_LOG_FILE_SIZE) {
+        if (file.length() > logFileSize) {
           fileOutputStream = new FileOutputStream(file, false);
         } else {
           fileOutputStream = new FileOutputStream(file, true);
@@ -321,6 +323,7 @@ public class Printer {
     private int methodCount = 2;
     private Context context;
     private String prefix = "";
+    private long logFileSize = MAX_LOG_FILE_SIZE;
 
     public Builder showThreadInfo(boolean showThreadInfo) {
       this.showThreadInfo = showThreadInfo;
@@ -343,8 +346,22 @@ public class Printer {
       return this;
     }
 
+    /**
+     * Save the log to the file
+     *
+     * @param context context
+     * @param prefix file name prefix
+     * @param logFileSize file size (bytes)
+     */
+    public Builder log2File(Context context, String prefix, long logFileSize) {
+      this.context = context;
+      this.prefix = prefix;
+      this.logFileSize = logFileSize;
+      return this;
+    }
+
     public Printer build() {
-      return new Printer(showThreadInfo, methodOffset, methodCount, context, prefix);
+      return new Printer(showThreadInfo, methodOffset, methodCount, context, prefix, logFileSize);
     }
   }
 }
