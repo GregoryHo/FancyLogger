@@ -80,37 +80,37 @@ public class Printer {
     }
 
     String decorate = decorateMessage(message);
+    switch (verbose) {
+      case FancyLogger.VERBOSE:
+        Log.v(tag, decorate);
+        break;
+
+      case FancyLogger.DEBUG:
+        Log.d(tag, decorate);
+        break;
+
+      case FancyLogger.INFO:
+        Log.i(tag, decorate);
+        break;
+
+      case FancyLogger.WARN:
+        Log.w(tag, decorate);
+        break;
+
+      case FancyLogger.ERROR:
+        Log.e(tag, decorate);
+        break;
+
+      case FancyLogger.WTF:
+        Log.w(tag, decorate);
+        break;
+
+      default:
+        break;
+    }
+
     if (context != null) {
       log2Files(decorate);
-    } else {
-      switch (verbose) {
-        case FancyLogger.VERBOSE:
-          Log.v(tag, decorate);
-          break;
-
-        case FancyLogger.DEBUG:
-          Log.d(tag, decorate);
-          break;
-
-        case FancyLogger.INFO:
-          Log.i(tag, decorate);
-          break;
-
-        case FancyLogger.WARN:
-          Log.w(tag, decorate);
-          break;
-
-        case FancyLogger.ERROR:
-          Log.e(tag, decorate);
-          break;
-
-        case FancyLogger.WTF:
-          Log.w(tag, decorate);
-          break;
-
-        default:
-          break;
-      }
     }
   }
 
