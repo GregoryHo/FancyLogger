@@ -223,14 +223,12 @@ public class Printer {
         JSONObject jsonObject = new JSONObject(message);
         message = jsonObject.toString(JSON_INDENT);
       } catch (JSONException e) {
-        e.printStackTrace();
       }
     } else if (message.startsWith("[")) {
       try {
         JSONArray jsonArray = new JSONArray(message);
         message = jsonArray.toString(JSON_INDENT);
       } catch (JSONException e) {
-        e.printStackTrace();
       }
     }
 
@@ -335,6 +333,13 @@ public class Printer {
       return this;
     }
 
+    /**
+     * Saves the log to the file
+     *
+     * @param context context
+     * @param prefix file name prefix
+     * @return
+     */
     public Builder log2File(Context context, String prefix) {
       this.context = context;
       this.prefix = prefix;
