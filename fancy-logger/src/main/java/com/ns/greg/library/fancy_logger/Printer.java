@@ -19,7 +19,8 @@ import static android.content.ContentValues.TAG;
 import static java.lang.Thread.currentThread;
 
 /**
- * Created by Gregory on 2017/7/21.
+ * @author Gregory
+ * @since 2017/7/21
  */
 
 public class Printer {
