@@ -63,6 +63,7 @@ public class Printer {
   private final Context context;
   private final String prefix;
   private final long logFileSize;
+  private final StringBuilder contentBuilder = new StringBuilder();
 
   private Printer(boolean showThreadInfo, int methodOffset, int methodCount, Context context,
       String prefix, long logFileSize) {
@@ -80,100 +81,28 @@ public class Printer {
       message = "NULL";
     }
 
-    String decorate = decorateMessage(message);
-    switch (verbose) {
-      case FancyLogger.VERBOSE:
-        Log.v(tag, decorate);
-        break;
-
-      case FancyLogger.DEBUG:
-        Log.d(tag, decorate);
-        break;
-
-      case FancyLogger.INFO:
-        Log.i(tag, decorate);
-        break;
-
-      case FancyLogger.WARN:
-        Log.w(tag, decorate);
-        break;
-
-      case FancyLogger.ERROR:
-        Log.e(tag, decorate);
-        break;
-
-      case FancyLogger.WTF:
-        Log.w(tag, decorate);
-        break;
-
-      default:
-        break;
-    }
-
-    if (context != null) {
-      log2Files(decorate);
-    }
+    logHeader(verbose, tag);
+    logMethod(verbose, tag);
+    logMessage(verbose, tag, message);
   }
 
-  private void log2Files(String decorate) {
-    try {
-      File direct = new File(
-          Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-              + LOG_PREFIX);
-
-      if (!direct.exists()) {
-        direct.mkdir();
-      }
-
-      String fileNameTimeStamp =
-          new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
-      String logTimeStamp =
-          new SimpleDateFormat("E MMM dd yyyy 'at' HH:mm:ss:sss", Locale.getDefault()).format(
-              new Date());
-      String fileName = prefix + fileNameTimeStamp + ".txt";
-      File file = new File(
-          Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-              + LOG_PREFIX
-              + File.separator
-              + fileName);
-      file.createNewFile();
-      if (file.exists()) {
-        OutputStream fileOutputStream;
-        fileOutputStream = new FileOutputStream(file, file.length() < logFileSize);
-        fileOutputStream.write((logTimeStamp + "\n" + decorate).getBytes("UTF-8"));
-        fileOutputStream.close();
-        // Scan file
-        MediaScannerConnection.scanFile(context, new String[] { file.toString() }, null, null);
-      }
-    } catch (Exception e) {
-      Log.e(TAG, "Error while logging into file : " + e);
-    }
-  }
-
-  private String decorateMessage(String message) {
-    StringBuilder builder = new StringBuilder(256);
-    logHeader(builder);
-    logMethod(builder);
-    logMessage(message, builder);
-
-    return builder.toString();
-  }
-
-  private void logHeader(StringBuilder builder) {
+  private void logHeader(int verbose, String tag) {
     if (showThreadInfo) {
-      builder.append(TOP_BORDER)
-          .append(NEW_LINE)
-          .append(HORIZONTAL_LINE)
+      contentBuilder.append(TOP_BORDER).append(NEW_LINE);
+      logContent(verbose, tag, getContent());
+      contentBuilder.append(HORIZONTAL_LINE)
           .append(SPACE)
           .append(THREAD_TITLE)
           .append(currentThread().getName())
           .append(NEW_LINE);
+      logContent(verbose, tag, getContent());
     } else {
-      builder.append(TOP_BORDER).append(NEW_LINE);
+      contentBuilder.append(TOP_BORDER).append(NEW_LINE);
+      logContent(verbose, tag, getContent());
     }
   }
 
-  private void logMethod(StringBuilder builder) {
+  private void logMethod(int verbose, String tag) {
     StackTraceElement[] trace = Thread.currentThread().getStackTrace();
     int stackOffset = getStackOffset(trace) + methodOffset;
     // corresponding method count with the current stack may exceeds the stack trace. Trims the count
@@ -183,7 +112,8 @@ public class Printer {
     }
 
     if (methodCount > 0 && showThreadInfo) {
-      builder.append(MIDDLE_BORDER).append(NEW_LINE);
+      contentBuilder.append(MIDDLE_BORDER).append(NEW_LINE);
+      logContent(verbose, tag, getContent());
     }
 
     int space = 1;
@@ -193,12 +123,12 @@ public class Printer {
         continue;
       }
 
-      builder.append(HORIZONTAL_LINE);
+      contentBuilder.append(HORIZONTAL_LINE);
       for (int s = 0; s < space; s++) {
-        builder.append(SPACE);
+        contentBuilder.append(SPACE);
       }
 
-      builder.append(getSimpleClassName(trace[stackIndex].getClassName()))
+      contentBuilder.append(getSimpleClassName(trace[stackIndex].getClassName()))
           .append('.')
           .append(trace[stackIndex].getMethodName())
           .append(SPACE)
@@ -208,16 +138,19 @@ public class Printer {
           .append(trace[stackIndex].getLineNumber())
           .append(')')
           .append(NEW_LINE);
-
+      logContent(verbose, tag, getContent());
       space += 2;
     }
 
     if (methodCount > 0) {
-      builder.append(MIDDLE_BORDER).append(NEW_LINE);
+      contentBuilder.append(MIDDLE_BORDER).append(NEW_LINE);
+      logContent(verbose, tag, getContent());
     }
   }
 
-  private void logMessage(String message, StringBuilder builder) {
+  private void logMessage(int verbose, String tag, String message) {
+    contentBuilder.append(HORIZONTAL_LINE).append(SPACE).append(MESSAGE_TITLE).append(NEW_LINE);
+    logContent(verbose, tag, getContent());
     // Convert JSON
     if (message.startsWith("{")) {
       try {
@@ -234,36 +167,21 @@ public class Printer {
     }
 
     String[] messages = message.split(NEW_LINE);
-    int length = messages.length;
-    if (length == 1) {
-      builder.append(HORIZONTAL_LINE).append(SPACE).append(MESSAGE_TITLE);
-      substringMessage(message, false, builder);
-      builder.append(BOTTOM_BORDER).append(NEW_LINE);
-    } else if (messages.length > 1) {
-      builder.append(HORIZONTAL_LINE).append(SPACE).append(MESSAGE_TITLE).append(NEW_LINE);
-      for (String msg : messages) {
-        substringMessage(msg, true, builder);
-      }
-
-      builder.append(BOTTOM_BORDER).append(NEW_LINE);
+    for (String msg : messages) {
+      substringMessage(verbose, tag, msg);
     }
+
+    contentBuilder.append(BOTTOM_BORDER).append(NEW_LINE);
+    logContent(verbose, tag, getContent());
   }
 
-  private void substringMessage(String message, boolean hasNewLine, StringBuilder builder) {
+  private void substringMessage(int verbose, String tag, String message) {
     int messageLength = message.length();
     if (messageLength > MAX_LINE_LENGTH) {
       int startIndex = 0;
       int endIndex = MAX_LINE_LENGTH;
       while (endIndex <= messageLength) {
-        if (startIndex != 0) {
-          builder.append(HORIZONTAL_LINE);
-          int subSpace = MESSAGE_TITLE.length();
-          for (int s = 0; s <= subSpace; s++) {
-            builder.append(SPACE);
-          }
-        }
-
-        builder.append(message.substring(startIndex, endIndex)).append(NEW_LINE);
+        logChunk(verbose, tag, message.substring(startIndex, endIndex));
         if (endIndex == messageLength) {
           break;
         }
@@ -273,18 +191,19 @@ public class Printer {
             endIndex + MAX_LINE_LENGTH < messageLength ? endIndex + MAX_LINE_LENGTH : messageLength;
       }
     } else {
-      if (!hasNewLine) {
-        builder.append(message).append(NEW_LINE);
-      } else {
-        builder.append(HORIZONTAL_LINE);
-        int subSpace = MESSAGE_TITLE.length();
-        for (int s = 0; s <= subSpace; s++) {
-          builder.append(SPACE);
-        }
-
-        builder.append(message).append(NEW_LINE);
-      }
+      logChunk(verbose, tag, message);
     }
+  }
+
+  private void logChunk(int verbose, String tag, String message) {
+    contentBuilder.append(HORIZONTAL_LINE);
+    int subSpace = MESSAGE_TITLE.length();
+    for (int s = 0; s <= subSpace; s++) {
+      contentBuilder.append(SPACE);
+    }
+
+    contentBuilder.append(message).append(NEW_LINE);
+    logContent(verbose, tag, getContent());
   }
 
   /**
@@ -310,14 +229,105 @@ public class Printer {
     return name.substring(lastIndex + 1);
   }
 
+  private String getContent() {
+    String content = contentBuilder.toString();
+    contentBuilder.setLength(0);
+    return content;
+  }
+
+  private void logContent(int verbose, String tag, String message) {
+    log2Chat(verbose, tag, message);
+    log2File(message);
+  }
+
+  private void log2Chat(int verbose, String tag, String message) {
+    switch (verbose) {
+      case FancyLogger.VERBOSE:
+        Log.v(tag, message);
+        break;
+
+      case FancyLogger.DEBUG:
+        Log.d(tag, message);
+        break;
+
+      case FancyLogger.INFO:
+        Log.i(tag, message);
+        break;
+
+      case FancyLogger.WARN:
+        Log.w(tag, message);
+        break;
+
+      case FancyLogger.ERROR:
+        Log.e(tag, message);
+        break;
+
+      case FancyLogger.WTF:
+        Log.w(tag, message);
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  private void log2File(String decorate) {
+    if (context == null) {
+      // Ignored
+      return;
+    }
+
+    try {
+      File direct = new File(
+          Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+              + LOG_PREFIX);
+
+      if (!direct.exists()) {
+        direct.mkdir();
+      }
+
+      String fileNameTimeStamp =
+          new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
+      String logTimeStamp =
+          new SimpleDateFormat("E MMM dd yyyy 'at' HH:mm:ss:sss", Locale.getDefault()).format(
+              new Date());
+      String fileName = prefix + fileNameTimeStamp + ".txt";
+      File file = new File(
+          Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+              + LOG_PREFIX
+              + File.separator
+              + fileName);
+      file.createNewFile();
+      if (file.exists()) {
+        OutputStream fileOutputStream;
+        fileOutputStream = new FileOutputStream(file, file.length() < logFileSize);
+        fileOutputStream.write((logTimeStamp + ": " + decorate).getBytes("UTF-8"));
+        fileOutputStream.close();
+        // Scan file
+        MediaScannerConnection.scanFile(context, new String[] { file.toString() }, null, null);
+      }
+    } catch (Exception e) {
+      Log.e(TAG, "Error while logging into file : " + e);
+    }
+  }
+
   public static final class Builder {
 
-    private boolean showThreadInfo = true;
-    private int methodOffset = 0;
-    private int methodCount = 2;
+    private boolean showThreadInfo;
+    private int methodOffset;
+    private int methodCount;
     private Context context;
-    private String prefix = "";
-    private long logFileSize = DEFAULT_LOG_FILE_SIZE;
+    private String prefix;
+    private long logFileSize;
+
+    public Builder() {
+      showThreadInfo = true;
+      methodOffset = 0;
+      methodCount = 2;
+      context = null;
+      prefix = "";
+      logFileSize = DEFAULT_LOG_FILE_SIZE;
+    }
 
     public Builder showThreadInfo(boolean showThreadInfo) {
       this.showThreadInfo = showThreadInfo;
@@ -339,7 +349,6 @@ public class Printer {
      *
      * @param context context
      * @param prefix file name prefix
-     * @return
      */
     public Builder log2File(Context context, String prefix) {
       this.context = context;
