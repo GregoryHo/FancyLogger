@@ -7,7 +7,8 @@ import com.ns.greg.library.fancy_logger.FancyLogger;
 import com.ns.greg.library.fancy_logger.Printer;
 
 /**
- * Created by Gregory on 2017/7/21.
+ * @author Gregory
+ * @since 2017/7/21
  */
 
 public class DemoActivity extends AppCompatActivity {
@@ -16,38 +17,23 @@ public class DemoActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
 
     // Using default way
-    FancyLogger.add(FancyLogger.HIGH_PRIORITY, new Printer.Builder().build());
+    FancyLogger.add(FancyLogger.LOW_PRIORITY, new Printer.Builder().build());
     // Custom printer
     FancyLogger.add(FancyLogger.LOW_PRIORITY, new Printer.Builder().setMethodOffset(2)
-        .showThreadInfo(false)
+        .showThreadInfo(true)
         .log2File(getApplicationContext(), "Demo_")
         .build());
 
+    // Normal message
     FancyLogger.i("DEMO", "onCreate", FancyLogger.HIGH_PRIORITY);
-
-    String message = "============DEVICE INFO==============="
-        + "\n"
-        + "Title 1: A"
-        + "\n"
-        + "Title 2: B"
-        + "\n"
-        + "Title 3: C"
-        + "\n"
-        + "Title 4: D"
-        + "\n"
-        + "Title 5: E"
-        + "\n"
-        + "Title 6: F"
-        + "\n"
-        + "Title 7: G"
-        + "\n"
-        + "Title 8: H";
-
-    FancyLogger.d("DEMO", message, FancyLogger.NORMAL_PRIORITY);
-
+    // Json
     FancyLogger.d("DEMO",
         "{\"person\":[{\"name\":Greg, \"sex\":man, \"age\":26}, {\"name\":Natalie, \"sex\":woman, \"age\":24}]}");
-
-    FancyLogger.e("DEMO", "Fancy Logger log to the file!", FancyLogger.LOW_PRIORITY);
+    // Long Json String
+    FancyLogger.v("DEMO", "{\n"
+        + "  \"a\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n"
+        + "  \"b\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\n"
+        + "  \"c\": \"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\"\n"
+        + "}");
   }
 }
