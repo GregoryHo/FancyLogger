@@ -15,7 +15,6 @@ public class DemoActivity extends AppCompatActivity {
 
   @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-
     // Using default way
     FancyLogger.add(FancyLogger.LOW_PRIORITY, new Printer.Builder().build());
     // Custom printer
@@ -23,13 +22,15 @@ public class DemoActivity extends AppCompatActivity {
         .showThreadInfo(true)
         .log2File(getApplicationContext(), "Demo_")
         .build());
-
     // Normal message
     FancyLogger.i("DEMO", "onCreate", FancyLogger.HIGH_PRIORITY);
     // Json
     FancyLogger.d("DEMO",
         "{\"person\":[{\"name\":Greg, \"sex\":man, \"age\":26}, {\"name\":Natalie, \"sex\":woman, \"age\":24}]}");
-    // Long Json String
+    // Xml
+    FancyLogger.d("DEMO",
+        "<param><name value=\"Greg\"/><sex value=\"man\"/><age value=\"26\"/></param>");
+    // Long String
     FancyLogger.v("DEMO", "{\n"
         + "  \"a\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n"
         + "  \"b\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\n"
