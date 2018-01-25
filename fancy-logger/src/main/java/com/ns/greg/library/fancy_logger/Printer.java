@@ -7,10 +7,19 @@ import android.util.Log;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -151,7 +160,7 @@ public class Printer {
   private void logMessage(int verbose, String tag, String message) {
     contentBuilder.append(HORIZONTAL_LINE).append(SPACE).append(MESSAGE_TITLE).append(NEW_LINE);
     logContent(verbose, tag, getContent());
-    // Convert JSON
+    // Check JSON
     if (message.startsWith("{")) {
       try {
         JSONObject jsonObject = new JSONObject(message);
@@ -164,6 +173,18 @@ public class Printer {
         message = jsonArray.toString(JSON_INDENT);
       } catch (JSONException e) {
       }
+    }
+
+    // Check XML
+    try {
+      Source source = new StreamSource(new StringReader(message));
+      StreamResult result = new StreamResult(new StringWriter());
+      Transformer transformer = TransformerFactory.newInstance().newTransformer();
+      transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+      transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+      transformer.transform(source, result);
+      message = result.getWriter().toString().replaceFirst(">", ">\n");
+    } catch (TransformerException e) {
     }
 
     String[] messages = message.split(NEW_LINE);
@@ -321,12 +342,12 @@ public class Printer {
     private long logFileSize;
 
     public Builder() {
-      showThreadInfo = true;
-      methodOffset = 0;
-      methodCount = 2;
-      context = null;
-      prefix = "";
-      logFileSize = DEFAULT_LOG_FILE_SIZE;
+      this.showThreadInfo = true;
+      this.methodOffset = 0;
+      this.methodCount = 2;
+      this.context = null;
+      this.prefix = "";
+      this.logFileSize = DEFAULT_LOG_FILE_SIZE;
     }
 
     public Builder showThreadInfo(boolean showThreadInfo) {
