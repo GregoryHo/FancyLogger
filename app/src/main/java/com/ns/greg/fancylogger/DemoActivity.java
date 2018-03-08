@@ -25,11 +25,19 @@ public class DemoActivity extends AppCompatActivity {
     // Normal message
     FancyLogger.i("DEMO", "onCreate", FancyLogger.HIGH_PRIORITY);
     // Json
-    FancyLogger.d("DEMO",
-        "{\"person\":[{\"name\":Greg, \"sex\":man, \"age\":26}, {\"name\":Natalie, \"sex\":woman, \"age\":24}]}");
+    new Thread(new Runnable() {
+      @Override public void run() {
+        FancyLogger.d("DEMO",
+            "{\"person\":[{\"name\":Greg, \"sex\":man, \"age\":26}, {\"name\":Natalie, \"sex\":woman, \"age\":24}]}");
+      }
+    }).start();
     // Xml
-    FancyLogger.d("DEMO",
-        "<param><name value=\"Greg\"/><sex value=\"man\"/><age value=\"26\"/></param>");
+    new Thread(new Runnable() {
+      @Override public void run() {
+        FancyLogger.d("DEMO",
+            "<param><name value=\"Greg\"/><sex value=\"man\"/><age value=\"26\"/></param>");
+      }
+    }).start();
     // Long String
     FancyLogger.v("DEMO", "{\n"
         + "  \"a\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n"
