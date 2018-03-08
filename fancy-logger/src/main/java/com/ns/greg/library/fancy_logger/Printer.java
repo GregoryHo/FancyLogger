@@ -36,14 +36,8 @@ public class Printer {
 
   private static final String LOG_PREFIX = "/FancyLogs";
 
-  /**
-   * @see <a href="http://stackoverflow.com/a/8899735" />
-   */
-  private static final int ENTRY_MAX_LEN = 4000;
-
   // The minimum stack trace index, starts at this class after two native calls.
   private static final int MIN_STACK_OFFSET = 2;
-
   private static final int JSON_INDENT = 2;
 
   // Message box
@@ -64,7 +58,7 @@ public class Printer {
   private static final String MESSAGE_TITLE = "Message: ";
 
   private static final int MAX_LINE_LENGTH = MIDDLE_BORDER.length() - 11;
-  private static final long DEFAULT_LOG_FILE_SIZE = 100 * 1024 * 1024;
+  private static final long DEFAULT_LOG_FILE_SIZE = 100 * 1_024 * 1_024;
 
   private final boolean showThreadInfo;
   private final int methodOffset;
@@ -85,7 +79,7 @@ public class Printer {
     this.logFileSize = logFileSize;
   }
 
-  void log(int verbose, String tag, String message) {
+  /* Avoiding multi-thread competition */ synchronized void log(int verbose, String tag, String message) {
     if (message == null) {
       message = "NULL";
     }
